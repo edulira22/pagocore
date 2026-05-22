@@ -1,0 +1,224 @@
+generator client {
+  provider = "prisma-client-js"
+  output   = "../node_modules/.prisma/client"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+model Empresa {
+  id              String   @id @default(uuid())
+  nombreComercial String
+  razonSocial     String
+  rfc             String?
+  logoUrl         String?
+  colorPrimario   String   @default("#E8700A")
+  banco           String?
+  cuenta          String?
+  clabe           String?
+  autorizador1Id  String?
+  autorizador2Id  String?
+  activo          Boolean  @default(true)
+  createdAt       DateTime @default(now())
+
+  autorizador1    Usuario?         @relation("Autorizador1", fields: [autorizador1Id], references: [id])
+  autorizador2    Usuario?         @relation("Autorizador2", fields: [autorizador2Id], references: [id])
+  usuarioEmpresas UsuarioEmpresa[]
+  proveedores     Proveedor[]
+  ordenes         OrdenPago[]
+  saldos          SaldoEmpresa[]
+}
+
+enum RolGlobal {
+  ADMIN_SISTEMA
+  ADMINISTRADORA
+  DIRECTOR
+  PRESIDENTE
+}
+
+model Usuario {
+  id        String    @id @default(uuid())
+  nombre    String
+  iniciales String
+  email     String    @unique
+  rolGlobal RolGlobal
+  activo    Boolean   @default(true)
+  createdAt DateTime  @default(now())
+
+  empresas          UsuarioEmpresa[]
+  ordenesCreadas    OrdenPago[]    @relation("CreadoPor")
+  ordenesConAuth1   OrdenPago[]    @relation("Autorizador1Orden")
+  ordenesConAuth2   OrdenPago[]    @relation("Autorizador2Orden")
+  ordenesRechazadas OrdenPago[]    @relation("RechazadoPor")
+  ordenesConPago    OrdenPago[]    @relation("PagoRegistradoPor")
+  logs              OrdenLog[]
+  saldosRegistrados SaldoEmpresa[]
+  adjuntosSubidos   OrdenAdjunto[]
+  empresasComoAut1  Empresa[]      @relation("Autorizador1")
+  empresasComoAut2  Empresa[]      @relation("Autorizador2")
+}
+
+model UsuarioEmpresa {
+  usuarioId    String
+  empresaId    String
+  rolEnEmpresa RolGlobal
+
+  usuario Usuario @relation(fields: [usuarioId], references: [id])
+  empresa Empresa @relation(fields: [empresaId], references: [id])
+
+  @@id([usuarioId, empresaId])
+}
+
+model Proveedor {
+  id                  String  @id @default(uuid())
+  empresaId           String
+  nombreComercial     String
+  razonSocial         String?
+  rfc                 String?
+  contacto            String?
+  telefono            String?
+  domicilio           String?
+  referenciaServicio  String?
+  categoria           String?
+  banco               String?
+  cuenta              String?
+  clabe               String?
+  formaPagoDefault    String?
+  datosBancariosTexto String?
+  activo              Boolean @default(true)
+
+  empresa Empresa     @relation(fields: [empresaId], references: [id])
+  ordenes OrdenPago[]
+}
+
+enum EstadoOrden {
+  BORRADOR
+  ENVIADA
+  AUTORIZADA_1
+  RECHAZADA
+  AUTORIZADA_2
+  PAGADA
+  CONCILIADA
+  CANCELADA
+}
+
+model OrdenPago {
+  id                      String      @id @default(uuid())
+  folio                   String      @unique
+  empresaId               String
+  proveedorId             String?
+  proveedorNombre         String?
+  proveedorRazonSocial    String?
+  proveedorRfc            String?
+  proveedorContacto       String?
+  proveedorTelefono       String?
+  proveedorDomicilio      String?
+  referenciaServicio      String?
+  proyecto                String?
+  categoria               String?
+  moneda                  String      @default("MXN")
+  subtotal                Decimal     @default(0)
+  iva                     Decimal     @default(0)
+  total                   Decimal     @default(0)
+  nombreTitularPago       String?
+  formaPago               String?
+  bancoDestino            String?
+  cuentaDestino           String?
+  clabeDestino            String?
+  datosBancariosTexto     String?
+  areaSolicitante         String?
+  estado                  EstadoOrden @default(BORRADOR)
+  creadoPorId             String
+  fechaSolicitud          DateTime    @default(now())
+  fechaPagoSolicitada     DateTime?
+  autorizador1Id          String?
+  fechaAutorizacion1      DateTime?
+  comentarioAutorizacion1 String?
+  autorizador2Id          String?
+  fechaAutorizacion2      DateTime?
+  comentarioAutorizacion2 String?
+  rechazadoPorId          String?
+  fechaRechazo            DateTime?
+  comentarioRechazo       String?
+  fechaPago               DateTime?
+  pagoRegistradoPorId     String?
+  conciliada              Boolean     @default(false)
+  fechaConciliacion       DateTime?
+  pdfUrl                  String?
+  pdfNombre               String?
+  escaneoFirmasUrl        String?
+  createdAt               DateTime    @default(now())
+  updatedAt               DateTime    @updatedAt
+
+  empresa           Empresa        @relation(fields: [empresaId], references: [id])
+  proveedor         Proveedor?     @relation(fields: [proveedorId], references: [id])
+  creadoPor         Usuario        @relation("CreadoPor", fields: [creadoPorId], references: [id])
+  autorizador1      Usuario?       @relation("Autorizador1Orden", fields: [autorizador1Id], references: [id])
+  autorizador2      Usuario?       @relation("Autorizador2Orden", fields: [autorizador2Id], references: [id])
+  rechazadoPor      Usuario?       @relation("RechazadoPor", fields: [rechazadoPorId], references: [id])
+  pagoRegistradoPor Usuario?       @relation("PagoRegistradoPor", fields: [pagoRegistradoPorId], references: [id])
+  detalle           OrdenDetalle[]
+  adjuntos          OrdenAdjunto[]
+  log               OrdenLog[]
+}
+
+model OrdenDetalle {
+  id             String  @id @default(uuid())
+  ordenId        String
+  descripcion    String
+  cantidad       Decimal
+  precioUnitario Decimal
+  importe        Decimal
+  ordenLinea     Int
+
+  orden OrdenPago @relation(fields: [ordenId], references: [id])
+}
+
+enum TipoAdjunto {
+  FACTURA
+  PEDIDO
+  COMPLEMENTO_PAGO
+  COMPROBANTE
+  ESCANEO_FIRMAS
+  OTRO
+}
+
+model OrdenAdjunto {
+  id            String      @id @default(uuid())
+  ordenId       String
+  tipo          TipoAdjunto
+  nombreArchivo String
+  url           String
+  subidoPorId   String
+  createdAt     DateTime    @default(now())
+
+  orden     OrdenPago @relation(fields: [ordenId], references: [id])
+  subidoPor Usuario   @relation(fields: [subidoPorId], references: [id])
+}
+
+model OrdenLog {
+  id             String   @id @default(uuid())
+  ordenId        String
+  usuarioId      String
+  accion         String
+  estadoAnterior String?
+  estadoNuevo    String?
+  comentario     String?
+  createdAt      DateTime @default(now())
+
+  orden   OrdenPago @relation(fields: [ordenId], references: [id])
+  usuario Usuario   @relation(fields: [usuarioId], references: [id])
+}
+
+model SaldoEmpresa {
+  id              String   @id @default(uuid())
+  empresaId       String
+  saldoInicial    Decimal
+  fechaSaldo      DateTime
+  registradoPorId String
+  createdAt       DateTime @default(now())
+
+  empresa       Empresa @relation(fields: [empresaId], references: [id])
+  registradoPor Usuario @relation(fields: [registradoPorId], references: [id])
+}
