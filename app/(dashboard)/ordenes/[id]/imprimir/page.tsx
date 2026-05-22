@@ -250,7 +250,7 @@ export default function ImprimirOrdenPage() {
             <FirmaBox
               titulo="AUTORIZÓ"
               subtitulo="1ª Autorización · Director"
-              nombre={orden.autorizador1?.nombre ?? ""}
+              nombre={orden.autorizador1?.nombre ?? orden.empresa?.autorizador1?.nombre ?? ""}
               fecha={orden.fechaAutorizacion1 ? formatDate(orden.fechaAutorizacion1) : ""}
               comentario={orden.comentarioAutorizacion1}
               color={color}
@@ -258,7 +258,7 @@ export default function ImprimirOrdenPage() {
             <FirmaBox
               titulo="AUTORIZÓ"
               subtitulo="2ª Autorización · Presidente"
-              nombre={orden.autorizador2?.nombre ?? ""}
+              nombre={orden.autorizador2?.nombre ?? orden.empresa?.autorizador2?.nombre ?? ""}
               fecha={orden.fechaAutorizacion2 ? formatDate(orden.fechaAutorizacion2) : ""}
               comentario={orden.comentarioAutorizacion2}
               color={color}
@@ -350,19 +350,24 @@ function FirmaBox({ titulo, subtitulo, nombre, fecha, comentario, color }: {
         <div style={{ height: "60px", borderBottom: "1px solid #ccc", marginBottom: "8px" }} />
 
         {/* Nombre y fecha */}
-        {nombre ? (
-          <div>
-            <p style={{ fontSize: S.body, fontWeight: "700", margin: "0 0 2px" }}>{nombre}</p>
-            {fecha && <p style={{ fontSize: S.label, color: "#888", margin: 0 }}>{fecha}</p>}
-            {comentario && (
-              <p style={{ fontSize: S.label, color: "#999", margin: "4px 0 0", fontStyle: "italic" }}>
-                "{comentario}"
-              </p>
-            )}
-          </div>
-        ) : (
-          <p style={{ fontSize: S.label, color: "#ccc", margin: 0, fontStyle: "italic" }}>Pendiente</p>
-        )}
+        <div>
+          <p style={{ fontSize: "10px", color: "#aaa", textTransform: "uppercase", letterSpacing: "0.05em", margin: "0 0 2px" }}>
+            NOMBRE:
+          </p>
+          <p style={{ fontSize: S.body, fontWeight: "700", margin: "0 0 2px", minHeight: "18px" }}>
+            {nombre}
+          </p>
+          {fecha && (
+            <p style={{ fontSize: S.label, color: "#888", margin: 0 }}>
+              Fecha: {fecha}
+            </p>
+          )}
+          {comentario && (
+            <p style={{ fontSize: S.label, color: "#999", margin: "4px 0 0", fontStyle: "italic" }}>
+              "{comentario}"
+            </p>
+          )}
+        </div>
       </div>
     </div>
   )

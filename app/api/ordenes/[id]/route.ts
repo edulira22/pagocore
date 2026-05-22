@@ -14,7 +14,12 @@ export async function GET(
   const orden = await prisma.ordenPago.findUnique({
     where: { id },
     include: {
-      empresa: true,
+      empresa: {
+        include: {
+          autorizador1: { select: { nombre: true } },
+          autorizador2: { select: { nombre: true } },
+        },
+      },
       proveedor: true,
       creadoPor: { select: { nombre: true, iniciales: true } },
       autorizador1: { select: { nombre: true } },
