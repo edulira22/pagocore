@@ -118,8 +118,20 @@ export default function ImprimirOrdenPage() {
             <div style={{ display: "flex", alignItems: "flex-start", gap: "14px" }}>
               {empresa.logoUrl ? (
                 // eslint-disable-next-line @next/next/no-img-element
-                <img src={empresa.logoUrl} alt={empresa.nombreComercial}
-                  style={{ height: "56px", objectFit: "contain", flexShrink: 0 }} />
+                <img
+                  src={empresa.logoUrl}
+                  alt={empresa.nombreComercial}
+                  style={{
+                    height: "52px",
+                    maxWidth: "200px",
+                    objectFit: "contain",
+                    flexShrink: 0,
+                    // fondo de color para logos claros (ej. PE Bursátil blanco)
+                    backgroundColor: empresa.logoUrl.includes("bursatil") ? color : "transparent",
+                    borderRadius: empresa.logoUrl.includes("bursatil") ? "8px" : "0",
+                    padding: empresa.logoUrl.includes("bursatil") ? "8px 12px" : "0",
+                  }}
+                />
               ) : (
                 <div style={{
                   width: "60px", height: "60px", borderRadius: "12px", flexShrink: 0,
