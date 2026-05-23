@@ -3,7 +3,12 @@
     "allow": [
       "Bash(Get-Content \"C:\\\\Users\\\\eduar\\\\AppData\\\\Local\\\\Temp\\\\claude\\\\C--Users-eduar-OneDrive-Documentos-Claude-codes-pagocre\\\\7fdfd87e-fbf5-41d3-ab03-1080af234168\\\\tasks\\\\bpyxbgnhu.output\" -Wait)",
       "Bash(Select-String -Pattern \"Success|Error|error|created|ready|failed|Done|Installing\" --AllMatches)",
-      "PowerShell($output = \"C:\\\\Users\\\\eduar\\\\AppData\\\\Local\\\\Temp\\\\claude\\\\C--Users-eduar-OneDrive-Documentos-Claude-codes-pagocre\\\\7fdfd87e-fbf5-41d3-ab03-1080af234168\\\\tasks\\\\bpyxbgnhu.output\"; $start = Get-Date; do { Start-Sleep -Seconds 5; $content = Get-Content $output -Tail 3 -Raw; Write-Output $content; if \\($content -match \"Success|Error|error|failed\"\\) { break } } while \\(\\(Get-Date\\) -lt $start.AddMinutes\\(3\\)\\))"
+      "PowerShell($output = \"C:\\\\Users\\\\eduar\\\\AppData\\\\Local\\\\Temp\\\\claude\\\\C--Users-eduar-OneDrive-Documentos-Claude-codes-pagocre\\\\7fdfd87e-fbf5-41d3-ab03-1080af234168\\\\tasks\\\\bpyxbgnhu.output\"; $start = Get-Date; do { Start-Sleep -Seconds 5; $content = Get-Content $output -Tail 3 -Raw; Write-Output $content; if \\($content -match \"Success|Error|error|failed\"\\) { break } } while \\(\\(Get-Date\\) -lt $start.AddMinutes\\(3\\)\\))",
+      "Bash(git commit -m ' *)",
+      "Bash(git push *)",
+      "Bash(git add *)",
+      "Bash(npx ts-node *)",
+      "Bash(findstr /i \"supabase\")"
     ]
   }
 }

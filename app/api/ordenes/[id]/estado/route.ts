@@ -82,6 +82,14 @@ export async function PATCH(
       logAccion = "PAGO REGISTRADO"
       break
 
+    case "CONCILIAR":
+      if (orden.estado !== "PAGADA")
+        return NextResponse.json({ error: "Solo se pueden conciliar órdenes pagadas" }, { status: 400 })
+      nuevoEstado = "CONCILIADA"
+      updateData = { estado: "CONCILIADA", conciliada: true, fechaConciliacion: new Date() }
+      logAccion = "CONCILIADA"
+      break
+
     case "CANCELAR":
       nuevoEstado = "CANCELADA"
       updateData = { estado: "CANCELADA" }
