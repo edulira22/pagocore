@@ -3,8 +3,27 @@
 import { useEffect, useState } from "react"
 import { formatCurrency } from "@/lib/utils"
 import { toast } from "sonner"
-import { BarChart3, TrendingUp, Clock, CheckCircle, Plus, X, Check } from "lucide-react"
+import { BarChart3, TrendingUp, Clock, CheckCircle, Plus, X, Check, Calendar } from "lucide-react"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
+
+type Periodo = "hoy" | "semana" | "mes" | "anio" | "custom"
+
+function getRango(periodo: Periodo, custom: { desde: string; hasta: string }) {
+  const now = new Date()
+  const pad = (n: number) => String(n).padStart(2, "0")
+  const fmt = (d: Date) => `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`
+
+  switch (periodo) {
+    case "hoy":   return { desde: fmt(now), hasta: fmt(now) }
+    case "semana": {
+      const lun = new Date(now); lun.setDate(now.getDate() - now.getDay() + 1)
+      return { desde: fmt(lun), hasta: fmt(now) }
+    }
+    case "mes":   return { desde: fmt(new Date(now.getFullYear(), now.getMonth(), 1)), hasta: fmt(now) }
+    case "anio":  return { desde: fmt(new Date(now.getFullYear(), 0, 1)), hasta: fmt(now) }
+    case "custom": return custom
+  }
+}
 
 type Reporte = {
   conteos: Record<string, number>
@@ -28,6 +47,14 @@ type Saldo = {
 
 type EmpresaSimple = { id: string; nombreComercial: string; colorPrimario: string }
 
+const PERIODOS: { key: Periodo; label: string }[] = [
+  { key: "hoy",    label: "Hoy" },
+  { key: "semana", label: "Esta semana" },
+  { key: "mes",    label: "Este mes" },
+  { key: "anio",   label: "Este año" },
+  { key: "custom", label: "Personalizado" },
+]
+
 export default function ReportesPage() {
   const [reporte,   setReporte]   = useState<Reporte | null>(null)
   const [saldos,    setSaldos]    = useState<Saldo[]>([])
@@ -37,12 +64,21 @@ export default function ReportesPage() {
   const [form,      setForm]      = useState({ empresaId: "", saldoInicial: "", fechaSaldo: "" })
   const [guardando, setGuardando] = useState(false)
 
-  useEffect(() => { cargar() }, [])
+  // Período
+  const [periodo,  setPeriodo]  = useState<Periodo>("mes")
+  const [custom,   setCustom]   = useState({ desde: "", hasta: "" })
+
+  useEffect(() => { cargar() }, [periodo, custom])
 
   async function cargar() {
     setLoading(true)
+    const rango = getRango(periodo, custom)
+    const params = new URLSearchParams()
+    if (rango.desde) params.set("desde", rango.desde)
+    if (rango.hasta) params.set("hasta", rango.hasta)
+
     const [rep, sal, emps] = await Promise.all([
-      fetch("/api/reportes").then((r) => r.json()),
+      fetch(`/api/reportes?${params}`).then((r) => r.json()),
       fetch("/api/saldos").then((r)   => r.json()),
       fetch("/api/empresas").then((r) => r.json()),
     ])
@@ -97,9 +133,49 @@ export default function ReportesPage() {
   return (
     <div className="space-y-6 max-w-4xl">
       {/* Encabezado */}
-      <div>
-        <h1 className="text-2xl font-bold">Reportes</h1>
-        <p className="text-sm text-muted-foreground mt-0.5 capitalize">{reporte.mes}</p>
+      <div className="flex items-start justify-between flex-wrap gap-4">
+        <div>
+          <h1 className="text-2xl font-bold">Reportes</h1>
+          <p className="text-sm text-muted-foreground mt-0.5 capitalize">{reporte.mes}</p>
+        </div>
+
+        {/* Selector de período */}
+        <div className="flex flex-col gap-2">
+          <div className="flex gap-1 flex-wrap">
+            {PERIODOS.map((p) => (
+              <button
+                key={p.key}
+                onClick={() => setPeriodo(p.key)}
+                className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium transition-colors ${
+                  periodo === p.key
+                    ? "bg-foreground text-background"
+                    : "bg-muted hover:bg-muted/80 text-muted-foreground"
+                }`}
+              >
+                {p.key === "custom" && <Calendar className="h-3 w-3" />}
+                {p.label}
+              </button>
+            ))}
+          </div>
+          {/* Inputs de rango personalizado */}
+          {periodo === "custom" && (
+            <div className="flex gap-2 items-center">
+              <input
+                type="date"
+                value={custom.desde}
+                onChange={(e) => setCustom((c) => ({ ...c, desde: e.target.value }))}
+                className="rounded-lg border border-border bg-background px-2 py-1 text-xs focus:outline-none"
+              />
+              <span className="text-xs text-muted-foreground">a</span>
+              <input
+                type="date"
+                value={custom.hasta}
+                onChange={(e) => setCustom((c) => ({ ...c, hasta: e.target.value }))}
+                className="rounded-lg border border-border bg-background px-2 py-1 text-xs focus:outline-none"
+              />
+            </div>
+          )}
+        </div>
       </div>
 
       {/* KPIs principales */}

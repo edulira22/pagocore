@@ -2,7 +2,7 @@ import { NextResponse } from "next/server"
 import { createClient } from "@/lib/supabase/server"
 import { prisma } from "@/lib/prisma"
 
-export async function GET() {
+export async function GET(request: Request) {
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) return NextResponse.json({ error: "No autorizado" }, { status: 401 })
@@ -15,10 +15,14 @@ export async function GET() {
 
   const empresaIds = usuario.empresas.map((ue) => ue.empresaId)
 
-  // Rango del mes actual
+  // ── Rango de fechas (parámetros opcionales) ───────────────────────────────
+  const { searchParams } = new URL(request.url)
+  const desdeParam = searchParams.get("desde")
+  const hastaParam = searchParams.get("hasta")
+
   const now = new Date()
-  const primerDiaMes  = new Date(now.getFullYear(), now.getMonth(), 1)
-  const ultimoDiaMes  = new Date(now.getFullYear(), now.getMonth() + 1, 0, 23, 59, 59)
+  const primerDiaMes  = desdeParam ? new Date(desdeParam) : new Date(now.getFullYear(), now.getMonth(), 1)
+  const ultimoDiaMes  = hastaParam ? new Date(hastaParam + "T23:59:59") : new Date(now.getFullYear(), now.getMonth() + 1, 0, 23, 59, 59)
 
   // Conteos por estado
   const [enviadas, autorizadas1, autorizadas2, pagadas, conciliadas, rechazadas, canceladas, borradores] =
