@@ -104,13 +104,6 @@ export default function AutorizacionesPage() {
     </div>
   )
 
-  if (!["DIRECTOR", "PRESIDENTE"].includes(rolUsuario)) return (
-    <div className="flex flex-col items-center justify-center h-64 text-muted-foreground gap-2">
-      <p className="text-base font-medium">Sin acceso</p>
-      <p className="text-sm">Esta sección es exclusiva para directores y presidentes</p>
-    </div>
-  )
-
   return (
     <div className="max-w-2xl mx-auto space-y-5">
       <div>
