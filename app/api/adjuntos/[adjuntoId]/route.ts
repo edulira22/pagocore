@@ -49,7 +49,7 @@ export async function DELETE(
 
   if (storageError) {
     console.error("Storage delete error:", storageError)
-    // Continuamos igual — eliminamos el registro aunque falle el storage
+    return NextResponse.json({ error: "No se pudo eliminar el archivo del storage" }, { status: 500 })
   }
 
   await prisma.ordenAdjunto.delete({ where: { id: adjuntoId } })

@@ -91,6 +91,8 @@ export async function PATCH(
       break
 
     case "CANCELAR":
+      if (!["BORRADOR", "ENVIADA"].includes(orden.estado))
+        return NextResponse.json({ error: "Solo se pueden cancelar órdenes en borrador o enviadas" }, { status: 400 })
       nuevoEstado = "CANCELADA"
       updateData = { estado: "CANCELADA" }
       break

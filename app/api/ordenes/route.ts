@@ -14,6 +14,10 @@ export async function GET(request: Request) {
   const estado = searchParams.get("estado")
   const categoria = searchParams.get("categoria")
 
+  const ESTADOS_VALIDOS = ["BORRADOR","ENVIADA","AUTORIZADA_1","RECHAZADA","AUTORIZADA_2","PAGADA","CONCILIADA","CANCELADA"]
+  if (estado && !ESTADOS_VALIDOS.includes(estado))
+    return NextResponse.json({ error: "Estado inválido" }, { status: 400 })
+
   const ordenes = await prisma.ordenPago.findMany({
     where: {
       ...(empresaId ? { empresaId } : {}),

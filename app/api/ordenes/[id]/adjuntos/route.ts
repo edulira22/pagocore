@@ -32,8 +32,12 @@ export async function POST(
   const file = formData.get("file") as File | null
   const tipo = formData.get("tipo") as string | null
 
+  const TIPOS_VALIDOS = ["FACTURA", "PEDIDO", "COMPLEMENTO_PAGO", "COMPROBANTE", "ESCANEO_FIRMAS", "OTRO"]
   if (!file || !tipo) {
     return NextResponse.json({ error: "Archivo y tipo son requeridos" }, { status: 400 })
+  }
+  if (!TIPOS_VALIDOS.includes(tipo)) {
+    return NextResponse.json({ error: "Tipo de adjunto inválido" }, { status: 400 })
   }
 
   // Construir ruta en Storage: empresaId/ordenId/tipo-timestamp.ext

@@ -141,10 +141,22 @@ export default function OrdenDetallePage() {
           </Link>
 
           {estado === "BORRADOR" && (
-            <Button size="sm" onClick={() => cambiarEstado("ENVIAR")} disabled={accionLoading}
-              className="gap-2 text-white" style={{ backgroundColor: color }}>
-              <Send className="h-4 w-4" /> Enviar para autorización
-            </Button>
+            <>
+              <Button size="sm" variant="outline"
+                className="gap-2 text-red-600 border-red-200 hover:bg-red-50"
+                disabled={accionLoading}
+                onClick={() => {
+                  if (window.confirm("¿Cancelar esta orden? Esta acción no se puede deshacer.")) {
+                    cambiarEstado("CANCELAR")
+                  }
+                }}>
+                <XCircle className="h-4 w-4" /> Cancelar orden
+              </Button>
+              <Button size="sm" onClick={() => cambiarEstado("ENVIAR")} disabled={accionLoading}
+                className="gap-2 text-white" style={{ backgroundColor: color }}>
+                <Send className="h-4 w-4" /> Enviar para autorización
+              </Button>
+            </>
           )}
 
           {(estado === "ENVIADA" || estado === "AUTORIZADA_1") && (
